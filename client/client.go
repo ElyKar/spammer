@@ -13,12 +13,12 @@ type Register struct {
 	Name string
 }
 
-var listenPort int = 8000
-var masterUrl string = "http://192.168.36.212:8000"
+var listenPort int = 8001
+var masterUrl string = "http://127.0.0.1:8000"
 
 func subscribe()  {
 	register := &Register{
-		Port: 8000,
+		Port: listenPort,
 		Name: "anthony",
 	}
 	content, err := json.Marshal(register)
@@ -45,10 +45,10 @@ func handleHttp(res http.ResponseWriter, req *http.Request){
 
 func startServer(){
 	http.HandleFunc("/", handleHttp)
-	http.ListenAndServe(":8000", nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", listenPort), nil)
 }
 
 func main(){
 	subscribe()
-	go startServer()
+	startServer()
 }
