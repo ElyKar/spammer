@@ -48,5 +48,6 @@ func handler(resp http.ResponseWriter, req *http.Request) {
 
 func main() {
 	http.HandleFunc("/question", handler)
+	http.HandleFunc("/register", registerHandler)
 	http.ListenAndServe(":8000", nil)
 }
