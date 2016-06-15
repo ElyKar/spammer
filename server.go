@@ -3,51 +3,28 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
-type Operation struct {
-	Type     string  `json:"type"`
-	OperandA float64 `json:"opA"`
-	OperandB float64 `json:"opB"`
-}
+// Register handler for a new connection
+func registerHandler(resp http.ResponseWriter, req *http.Request) {
 
-var operations [4]string
+	content, _ := ioutil.ReadAll(req.Body)
+	_ = req.Body.Close()
+	var user *User = &User{}
 
-func NewRandomOp() *Operation {
-	a := rand.Float64() + 1
-	b := rand.Float64() + 1
-	op := operations[rand.Int()%4]
-	return &Operation{
-		Type:     op,
-		OperandA: a,
-		OperandB: b,
-	}
-}
+	_ = json.Unmarshal(content, user)
+	user.Ip = strings.Split(req.RemoteAddr, ":")[0]
+	user.Addr = fmt.Sprintf("%s:%d", user.Ip, user.Port)
+	game.addPlayer(user)
 
-func (o *Operation) AddOne() {
-	o.OperandA += 1
-}
-
-func init() {
-	operations = [4]string{"ADD", "SUB", "MUL", "DIV"}
-}
-
-func handler(resp http.ResponseWriter, req *http.Request) {
-	operation := NewRandomOp()
-	encoded, err := json.Marshal(operation)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	resp.Write([]byte(req.RemoteAddr + "\n"))
-	resp.Write(encoded)
+	fmt.Printf("Added another user: %v\n", *user)
+	go clientGame(user)
 }
 
 func main() {
-	http.HandleFunc("/question", handler)
 	http.HandleFunc("/register", registerHandler)
 	http.ListenAndServe(":8000", nil)
 }
