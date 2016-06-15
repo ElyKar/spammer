@@ -31,7 +31,7 @@ func clientGame(user *User) {
 		client := http.Client{
 			Timeout: time.Duration(5 * time.Second),
 		}
-		resp, err := client.Post(url, "application/json", reader)
+		resp, err := client.Post("http://"+url+"/answer", "application/json", reader)
 
 		// The player has crashed or didn't answer in time, lose points and make a new attempt
 		if err != nil {
@@ -46,6 +46,7 @@ func clientGame(user *User) {
 		resp.Body.Close()
 		response := &Response{}
 		err = json.Unmarshal(content, response)
+		fmt.Println(string(content))
 
 		// The answer is not formatted properly, lose points and make a new attempt
 		if err != nil {
@@ -55,6 +56,7 @@ func clientGame(user *User) {
 		}
 
 		// Check if the response is correct
+		fmt.Printf("User %s answered %v, expected %v\n", user, response.Result, question.Answer())
 		if response.Result == question.Answer() {
 			fmt.Printf("User %s answered successfully\n", user)
 			user.Points += 1
